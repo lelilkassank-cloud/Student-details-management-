@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attributa – Employee Attribution System</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--ink:#1f2328;--mute:#6b7280;--line:#e7e1d6;--accent:#c2410c;--accent2:#0f766e;--soft:#fdeee3;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--card:#1e1b16;--ink:#f1ece2;--mute:#9a9486;--line:#332e25;--accent:#fb923c;--accent2:#2dd4bf;--soft:#2b2016}}
+:root[data-theme="dark"]{--bg:#15130f;--card:#1e1b16;--ink:#f1ece2;--mute:#9a9486;--line:#332e25;--accent:#fb923c;--accent2:#2dd4bf;--soft:#2b2016}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;font-weight:700}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 18px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0 24px}
+.logo{font-family:Georgia,serif;font-size:24px;font-weight:700}.logo span{color:var(--accent)}
+nav{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px}
+nav button{border:0;background:none;color:var(--mute);padding:8px 16px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer}
+nav button.on{background:var(--accent);color:#fff}
+.hero{padding:10px 0 26px}.hero h1{font-size:clamp(30px,6vw,46px);line-height:1.1;max-width:640px}
+.hero p{color:var(--mute);max-width:560px;margin:12px 0 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stat b{display:block;font-family:Georgia,serif;font-size:30px;color:var(--accent)}.stat span{color:var(--mute);font-size:13px}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.grow{flex:1;min-width:0}.mute{color:var(--mute);font-size:13px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.pts{font-weight:700;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--accent);margin-right:6px}
+.seg{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+label{display:block;font-size:13px;color:var(--mute);margin:14px 0 5px}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.chip.on{border-color:var(--accent);background:var(--soft)}
+.chip input[type=number]{width:62px;padding:4px 6px}
+.chip input[type=checkbox]{width:auto}
+.btn{margin-top:18px;background:var(--accent);color:#fff;border:0;padding:12px 22px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:none;color:var(--mute);border:1px solid var(--line);margin-top:0;padding:6px 12px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.filters button.on{background:var(--ink);color:var(--bg)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">Attributa<span>.</span></div>
+  <nav id="nav"><button data-v="dash" class="on">Dashboard</button><button data-v="log">Log credit</button><button data-v="team">Team</button></nav>
+</header>
+<div class="hero">
+  <h1>Give credit to the people who earned it.</h1>
+  <p>Every shipped feature, fix and mentoring hour has several hands behind it. Attributa records who contributed, how much, and turns it into a fair, visible picture.</p>
+</div>
+<main id="app"></main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var COLORS=["#c2410c","#0f766e","#7c3aed","#be123c","#1d4ed8","#a16207"];
+var W={Delivery:3,Leadership:3,Mentoring:2,Idea:2,Fix:1.5};
+var E=[{id:1,n:"Priya Raman",r:"Engineering Lead"},{id:2,n:"Arjun Mehta",r:"Backend Engineer"},{id:3,n:"Sana Iyer",r:"Product Designer"},{id:4,n:"Karthik S",r:"Support Manager"},{id:5,n:"Meera Nair",r:"QA Engineer"},{id:6,n:"Rohan Das",r:"Data Analyst"}];
+var P=["Apollo Launch","Billing Revamp","Support Portal"];
+var C=[
+{id:1,p:"Apollo Launch",t:"Shipped onboarding flow",ty:"Delivery",im:5,d:"2026-10-28",s:{1:50,2:30,3:20}},
+{id:2,p:"Billing Revamp",t:"Fixed invoice rounding bug",ty:"Fix",im:3,d:"2026-11-02",s:{2:70,5:30}},
+{id:3,p:"Support Portal",t:"Redesigned ticket screens",ty:"Idea",im:4,d:"2026-11-04",s:{3:60,4:40}},
+{id:4,p:"Apollo Launch",t:"Mentored two new hires",ty:"Mentoring",im:4,d:"2026-11-06",s:{1:100}},
+{id:5,p:"Billing Revamp",t:"Churn dashboard for finance",ty:"Delivery",im:4,d:"2026-11-09",s:{6:60,2:40}}];
+var view="dash",flt="All",nid=10;
+try{var sv=localStorage.getItem("attributa");if(sv){var o=JSON.parse(sv);C=o.C||C;nid=o.nid||nid}}catch(e){}
+function save(){try{localStorage.setItem("attributa",JSON.stringify({C:C,nid:nid}))}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function emp(id){return E.filter(function(e){return e.id==id})[0]}
+function col(id){return COLORS[(id-1)%COLORS.length]}
+function ini(n){return n.split(" ").map(function(w){return w[0]}).join("").slice(0,2)}
+function av(id){var e=emp(id);return '<div class="av" style="background:'+col(id)+'">'+ini(e.n)+'</div>'}
+function tot(c){var s=0;for(var k in c.s)s+=c.s[k];return s}
+function pts(c,id){return c.im*W[c.ty]*(c.s[id]||0)/tot(c)}
+function list(){return C.filter(function(c){return flt=="All"||c.p==flt})}
+function board(){return E.map(function(e){var x=0;list().forEach(function(c){x+=pts(c,e.id)});return{e:e,x:x}}).sort(function(a,b){return b.x-a.x})}
+function dash(){
+  var b=board(),max=Math.max.apply(null,b.map(function(r){return r.x}))||1,all=0;b.forEach(function(r){all+=r.x});
+  var h='<div class="stats"><div class="card stat"><b>'+E.length+'</b><span>People credited</span></div><div class="card stat"><b>'+list().length+'</b><span>Contributions logged</span></div><div class="card stat"><b>'+Math.round(all)+'</b><span>Credit points awarded</span></div></div>';
+  h+='<div class="filters">'+["All"].concat(P).map(function(p){return '<button data-f="'+p+'" class="'+(p==flt?"on":"")+'">'+p+'</button>'}).join("")+'</div>';
+  h+='<div class="grid"><div class="card"><h3>Credit leaderboard</h3><div style="margin-top:8px">';
+  b.forEach(function(r,i){h+='<div class="row">'+av(r.e.id)+'<div class="grow"><b>'+(i+1)+'. '+esc(r.e.n)+'</b><div class="mute">'+esc(r.e.r)+'</div><div class="bar"><i style="width:'+(r.x/max*100)+'%;background:'+col(r.e.id)+'"></i></div></div><div class="pts">'+r.x.toFixed(1)+'</div></div>'});
+  h+='</div></div><div class="card"><h3>Recent attributions</h3><div style="margin-top:8px">';
+  list().slice().sort(function(a,b){return b.id-a.id}).slice(0,6).forEach(function(c){
+    h+='<div class="row" style="display:block"><div><span class="tag">'+c.ty+'</span><b>'+esc(c.t)+'</b></div><div class="mute">'+esc(c.p)+' · '+c.d+' · impact '+c.im+'/5</div><div class="seg">'+Object.keys(c.s).map(function(k){return '<i style="width:'+(c.s[k]/tot(c)*100)+'%;background:'+col(k)+'"></i>'}).join("")+'</div><div class="mute">'+Object.keys(c.s).map(function(k){return emp(k).n.split(" ")[0]+" "+Math.round(c.s[k]/tot(c)*100)+"%"}).join(" · ")+'</div></div>'});
+  return h+'</div></div></div>';
+}
+function logv(){
+  var h='<div class="card"><h3>Log a contribution</h3><label>What was done?</label><input id="t" placeholder="e.g. Cut page load time in half">';
+  h+='<div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px"><div><label>Project</label><select id="p">'+P.map(function(p){return '<option>'+p+'</option>'}).join("")+'</select></div>';
+  h+='<div><label>Type</label><select id="ty">'+Object.keys(W).map(function(k){return '<option>'+k+'</option>'}).join("")+'</select></div>';
+  h+='<div><label>Impact (1–5)</label><select id="im"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></div></div>';
+  h+='<label>Who contributed, and in what share? (shares are normalised to 100%)</label><div class="chips">';
+  E.forEach(function(e){h+='<div class="chip" data-c="'+e.id+'"><input type="checkbox" id="k'+e.id+'"><label for="k'+e.id+'" style="margin:0;color:var(--ink)">'+esc(e.n)+'</label><input type="number" id="w'+e.id+'" value="50" min="1" max="100"></div>'});
+  return h+'</div><button class="btn" id="add">Attribute credit</button></div>';
+}
+function team(){
+  var h='<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">';
+  E.forEach(function(e){var mine=C.filter(function(c){return c.s[e.id]}),x=0;mine.forEach(function(c){x+=pts(c,e.id)});
+    h+='<div class="card"><div class="row" style="border:0;padding:0">'+av(e.id)+'<div class="grow"><b>'+esc(e.n)+'</b><div class="mute">'+esc(e.r)+'</div></div><div class="pts">'+x.toFixed(1)+'</div></div><div style="margin-top:12px" class="mute">'+(mine.length?mine.map(function(c){return '<div>• '+esc(c.t)+' <span class="tag">'+Math.round(c.s[e.id]/tot(c)*100)+'%</span></div>'}).join(""):"No contributions yet.")+'</div></div>'});
+  return h+'</div><p style="margin-top:20px"><button class="btn ghost" id="reset">Reset demo data</button></p>';
+}
+function render(){
+  document.getElementById("app").innerHTML=view=="dash"?dash():view=="log"?logv():team();
+  Array.prototype.forEach.call(document.querySelectorAll("#nav button"),function(b){b.className=b.dataset.v==view?"on":""});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-f]"),function(b){b.onclick=function(){flt=b.dataset.f;render()}});
+  Array.prototype.forEach.call(document.querySelectorAll(".chip"),function(c){var k=c.querySelector("input[type=checkbox]");k.onchange=function(){c.className="chip"+(k.checked?" on":"")}});
+  var a=document.getElementById("add");if(a)a.onclick=add;
+  var r=document.getElementById("reset");if(r)r.onclick=function(){C=[];try{localStorage.removeItem("attributa")}catch(e){}location.reload()};
+}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.className="toast show";setTimeout(function(){t.className="toast"},2200)}
+function add(){
+  var t=document.getElementById("t").value.trim(),s={};
+  E.forEach(function(e){if(document.getElementById("k"+e.id).checked)s[e.id]=Math.max(1,+document.getElementById("w"+e.id).value||1)});
+  if(!t)return toast("Please describe the contribution");
+  if(!Object.keys(s).length)return toast("Pick at least one contributor");
+  C.push({id:nid++,p:document.getElementById("p").value,t:t,ty:document.getElementById("ty").value,im:+document.getElementById("im").value,d:new Date().toISOString().slice(0,10),s:s});
+  save();view="dash";flt="All";render();toast("Credit attributed ✓");
+}
+document.getElementById("nav").onclick=function(e){if(e.target.dataset.v){view=e.target.dataset.v;render()}};
+render();
+</script>
+</body>
+</html>
